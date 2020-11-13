@@ -7,6 +7,7 @@ class Player():
     def __init__(self, name, indexPos):
         self.name = name
         self.pos = indexPos
+        self.winPos = indexPos
 
 
 def SetPlayerStartPosition():
@@ -18,15 +19,12 @@ def SetPlayerStartPosition():
 
 def MovePlayer(index):
     SetPlaySpaceIndex(index)
+    print(
+        "\n| Player {} --- at {}".format(players[index].name, players[index].pos))
     dice = RollDice()
     players[index].pos = (players[index].pos + dice) % 28
-    ## --- debug
-    print(players[index].pos)
-    print(playSpace[players[index].pos])
-    ## -- debug
-    print("\n| Player {} ---".format(players[index].name))
     print("- Dice Rolled:", dice)
-    print("- You Moved to:", players[index].pos)
+    print("- {} is now at: {}".format(players[index].name, players[index].pos))
     SetPlayersInPosition(index)
 
 
@@ -34,28 +32,57 @@ def SetPlaySpaceIndex(index):
     for i in playSpace:
         if i == players[index].name:
             playSpace[playSpace.index(i)] = players[index].pos + 1
-
-# what the fuck?!
+            return
+        elif playSpace.index(i) == players[index].pos and len(i) > 1:
+            playSpace[playSpace.index(i)] = i[2:]
+            return
 
 
 def SetPlayersInPosition(index):
     for i in playSpace:
-        print(i == players[index].pos)
-        if i == players[index].pos:
-            print(type(i))
-            playSpace[i] = players[index].name
+        if playSpace.index(i) == players[index].pos and isinstance(i, int):
+            playSpace[playSpace.index(i)] = players[index].name
+            return
+        elif playSpace.index(i) == players[index].pos and isinstance(i, str):
+            playSpace[playSpace.index(i)] += "|" + players[index].name
+            return
 
 
 def RollDice():
-    return 8  # test
+    return int(input("ENTER DICE: "))  # test
     # return randint(1, 6) + randint(1, 6)
 
 
 def PrintGround():
     print("-"*125)
-    print("", playerPosition)
+    print("", playerPosition)  # - for debug puropses
     print("", playSpace)
     print("-"*125)
+
+
+def Win(l):
+    # for i in playSpace:
+    #     if isinstance(i, str):
+    #         for j in players:
+    #             if playSpace.index(i) == j.winPos:
+    #                 print(" {} has WON!".format(j.name))
+    #                 players.remove(j)
+    #                 return
+    for i in players:
+        if i.pos == i.winPos:
+            print("{} has WON!".format(i.name))
+            players.remove(i)
+            l -= 1
+            return
+
+
+def RemovePlayer(l):  # useless
+    for i in players:
+        if i.pos == i.winPos:
+            print("{} has WON!".format(i.name))
+            players.remove(i)
+            l -= 1
+            return
 
 
 # Create PlayGround
@@ -71,29 +98,31 @@ D = Player("D", 24)  # 25
 # Create lists of players
 players = [A, B, C, D]
 
+
 # Set Players In Their Starting Position
 SetPlayerStartPosition()
-
-# for debug
-for i in playSpace:
-    if isinstance(i, str):
-        print(playSpace[playSpace.index(i)], playSpace.index(i))
-
 
 # Print First Site Of Ground
 PrintGround()
 
 # Play Turning Mechanisem
 l = 0
+winCondition = False
 while l < len(players):
-    playerTurn = int(
-        input(" Player {} | Enter 1 to Roll the Dice: "
-              .format(players[l].name)))
+    # playerTurn = int(
+    #     input(" Player {} | Enter 1 to Roll the Dice: "
+    #           .format(players[l].name)))
 
     MovePlayer(l)
     PrintGround()
 
+    if winCondition:
+        Win(l)
+
     l += 1
 
-    if l == 4:
+    if l == len(players):
         l = 0
+        winCondition = True
+
+# TODO WIN CONDITION!!!
